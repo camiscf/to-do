@@ -37,12 +37,19 @@ function deleteItem(listIndex, itemIndex) {
   database.lists[listIndex].items.splice(itemIndex, 1);
 
   fs.writeFileSync('database.json', JSON.stringify(database));
+
 }
 
 function deleteList(listIndex){
   const database = readDatabase();
   database.lists.splice(listIndex, 1);
 
+  fs.writeFileSync('database.json', JSON.stringify(database));
+}
+
+function editItem(listIndex, itemIndex, newItemName) {
+  const database = readDatabase();
+  database.lists[listIndex].items[itemIndex].nameItem = newItemName;
   fs.writeFileSync('database.json', JSON.stringify(database));
 }
 
@@ -91,11 +98,21 @@ export async function action({ request }) {
     const itemIndex = form.get('itemIndex');
 
     deleteItem(listIndex, itemIndex);
+
+
   }
 
   if (type == 'deleteList') {
     const listIndex = form.get('listIndex');
     deleteList(listIndex);
+  }
+
+  if (type == 'editItem') {
+    const listIndex = form.get('listIndex');
+    const itemIndex = form.get('itemIndex');
+    const newItemName = form.get('newItemName');
+
+    editItem(listIndex, itemIndex, newItemName);
   }
 
   return redirect('/?index');
@@ -108,6 +125,7 @@ export default function Index() {
 
   const [inputList, setInputList] = React.useState("");
 
+
   const inputs = {};
 
   database.lists.forEach((list, index) => {
@@ -116,6 +134,39 @@ export default function Index() {
 
   const [inputItems, setInputItems] = React.useState(inputs);
   
+  const edits = {};
+
+  database.lists.forEach((list, listIndex) => {
+    edits[listIndex] = {};
+    edits[listIndex]['name'] = list.name;
+    edits[listIndex]['items'] = {};
+    list.items.forEach((item, itemIndex) => {
+      edits[listIndex]['items'][itemIndex] = {};
+      edits[listIndex]['items'][itemIndex]['name'] = item.nameItem;
+      edits[listIndex]['items'][itemIndex]['editing'] = false;
+    });
+  })
+
+  const [inputEdit, setInputEdit] = React.useState(edits);
+
+  React.useEffect(() => {
+    const edits = {};
+
+    database.lists.forEach((list, listIndex) => {
+      edits[listIndex] = {};
+      edits[listIndex]['name'] = list.name;
+      edits[listIndex]['items'] = {};
+      list.items.forEach((item, itemIndex) => {
+        edits[listIndex]['items'][itemIndex] = {};
+        edits[listIndex]['items'][itemIndex]['name'] = item.nameItem;
+        edits[listIndex]['items'][itemIndex]['editing'] = false;
+      });
+    });
+  
+    setInputEdit(edits);
+  }, [database]);
+
+
   const handleChangeList = (e) => {
     setInputList(e.target.value);
   };
@@ -142,6 +193,33 @@ export default function Index() {
     submit(formData, { method: 'post', action: '/?index', replace: true });
   }
 
+  const handleEditItemConfirm = (e, listIndex, itemIndex) => {
+    const obj = {...inputEdit};
+    obj[listIndex].items[itemIndex].editing = false;
+    setInputEdit(obj);
+
+    const formData = new FormData();
+
+    formData.append('type', 'editItem');
+    formData.append('listIndex', listIndex);
+    formData.append('itemIndex', itemIndex);
+    formData.append('newItemName', inputEdit[listIndex].items[itemIndex].name);
+
+    submit(formData, { method: 'post', action: '/?index', replace: true });
+  }
+
+  const handleEditItem = (e, listIndex, itemIndex) => {
+    const obj = { ...inputEdit };
+    obj[listIndex].items[itemIndex].name = e.target.value;
+    setInputEdit(obj);
+  }
+
+  const handleItemFocus = (e, listIndex, itemIndex) => {
+    const obj = { ...inputEdit };
+    obj[listIndex].items[itemIndex].editing = true;
+    setInputEdit(obj);
+  }
+
   const handleInputItemChange = (e, index) => {
     const obj = {...inputItems};
     obj[index] = e.target.value;
@@ -156,6 +234,7 @@ export default function Index() {
     formData.append('itemIndex', itemIndex);
   
     submit(formData, { method: 'post', action: '/?index', replace: true });
+
   }
 
   function handleDeleteListClick(e, listIndex){
@@ -180,8 +259,9 @@ export default function Index() {
                 {list.items.map((item, itemIndex) => (
                   <li key={itemIndex}>
                     <input name='check' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
-                    <label>{item.nameItem}</label>
-                    <button id="delete" onClick={(e) => handleDeleteItemClick(e, index, itemIndex)}>x</button>
+                    <input value={inputEdit[index].items[itemIndex].name} onChange={(e) => handleEditItem(e, index, itemIndex)} onFocus={(e) => handleItemFocus(e, index, itemIndex)} onBlur={(e) => handleEditItemConfirm(e, index, itemIndex)} />
+                    <button id="delete" onClick={(e) => handleDeleteItemClick(e, index, itemIndex)}>❌</button>
+                    {inputEdit[index].items[itemIndex].editing && <button onClick={(e) => handleEditItemConfirm(e, index, itemIndex)}>✅</button>}
                   </li>
                 ))}
               </ul>
