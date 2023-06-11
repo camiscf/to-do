@@ -63,7 +63,7 @@ export default function Index() {
               <h2>{list.name}</h2>
               <ul>
                 {list.items.map((item, itemIndex) => (
-                  <li key={itemIndex}>{item}</li>
+                  <li key={itemIndex}><label><input type ="checkbox"/><span>{item}</span></label></li>
                 ))}
               </ul>
             </div>
