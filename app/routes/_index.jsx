@@ -1,5 +1,5 @@
 import { redirect } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 import * as fs from 'fs';
 import * as React from "react";
 
@@ -10,9 +10,16 @@ function readDatabase() {
 
 function writeDatabase(list) {
   const database = readDatabase();
-
   database.lists.push(list);
+  fs.writeFileSync('database.json', JSON.stringify(database));
+}
 
+function writeItem(listIndex, itemIndex, checked) {
+  const database = readDatabase();
+
+  const trueChecked = checked == 'true' ? true : false;
+
+  database.lists[listIndex].items[itemIndex].checked = trueChecked;
   fs.writeFileSync('database.json', JSON.stringify(database));
 }
 
@@ -31,27 +38,52 @@ export async function loader() {
 export async function action({ request }) {
   const form = await request.formData();
 
-  const listName = form.get('listName');
+  const checked = form.get('checked');
 
-  const list = {
-    "name": listName,
-    "items": [],
+  if (checked !== null) {
+    const listIndex = form.get('listIndex');
+    const itemIndex = form.get('itemIndex');
+
+    writeItem(listIndex, itemIndex, checked);
   }
 
-  writeDatabase(list);
+  const listName = form.get('listName');
+
+  if (listName) {
+    const list = {
+      "name": listName,
+      "items": [],
+    }
+    writeDatabase(list);
+  }
 
   return redirect('/?index');
 }
 
 export default function Index() {
   const [inputList, setInputList] = React.useState("");
-
-  const handleChange = (e) => {
+  const [inputItem, setInputItem] = React.useState("");
+  const handleChangeList = (e) => {
     setInputList(e.target.value);
   };
 
+  const handleChangeItem = (e) =>{
+    setInputItem(e.target.value)
+  }
+
+  const handleItemCheck = (e, listIndex, itemIndex) => {
+    const formData = new FormData();
+
+    formData.append('checked', e.target.checked);
+    formData.append('listIndex', listIndex);
+    formData.append('itemIndex', itemIndex);
+
+    submit(formData, { method: 'post', action: '/?index', replace: true });
+  }
+
   const database = useLoaderData();
   useActionData();
+  const submit = useSubmit();
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
@@ -63,21 +95,29 @@ export default function Index() {
               <h2>{list.name}</h2>
               <ul>
                 {list.items.map((item, itemIndex) => (
-                  <li key={itemIndex}><label><input type ="checkbox"/><span>{item}</span></label></li>
+                  <li key={itemIndex}>
+                    <input name='check' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
+                    <label>{item.nameItem}</label>
+                  </li>
                 ))}
               </ul>
+              <div>  
+                <Form method='post' name='createItem'>
+                  <input id="newItem" type="text" onChange={handleChangeItem} value={inputItem} name='itemName' placeholder='Adicione uma tarefa'/>
+                  <button id="submit" type="submit">adicionar tarefa</button>
+                </Form> 
+              </div>
             </div>
           ))}
         </div>
     ) : (
       <p>Cria a sua primeira lista!</p>
     )}
-      <Form method='post' name='criarLista'>
-        <input id="newList" type="text" onChange={handleChange} value={inputList} name='listName' placeholder='Nome da Lista'/>
+      <Form method='post' name='createList'>
+        <input id="newList" type="text" onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
         <button id="submit" type="submit">Criar lista</button>
       </Form>
     </div>
     
   );
 }
-
