@@ -1,9 +1,21 @@
+import { redirect } from '@remix-run/node';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import * as fs from 'fs';
+import * as React from "react";
 
 function readDatabase() {
   const data = fs.readFileSync('database.json');
   return JSON.parse(data);
 }
+
+function writeDatabase(list) {
+  const database = readDatabase();
+
+  database.lists.push(list);
+
+  fs.writeFileSync('database.json', JSON.stringify(database));
+}
+
 export const meta = () => {
   return [
     { title: "To Do" },
@@ -12,9 +24,35 @@ export const meta = () => {
   ];
 };
 
-const database = readDatabase();
+export async function loader() {
+  return readDatabase();
+}
+
+export async function action({ request }) {
+  const form = await request.formData();
+
+  const listName = form.get('listName');
+
+  const list = {
+    "name": listName,
+    "items": [],
+  }
+
+  writeDatabase(list);
+
+  return redirect('/?index');
+}
 
 export default function Index() {
+  const [inputList, setInputList] = React.useState("");
+
+  const handleChange = (e) => {
+    setInputList(e.target.value);
+  };
+
+  const database = useLoaderData();
+  useActionData();
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>To Do</h1>
@@ -32,8 +70,14 @@ export default function Index() {
           ))}
         </div>
     ) : (
-      <p>Cria a sua primeira lista</p>
+      <p>Cria a sua primeira lista!</p>
     )}
+      <Form method='post' name='criarLista'>
+        <input id="newList" type="text" onChange={handleChange} value={inputList} name='listName' placeholder='Nome da Lista'/>
+        <button id="submit" type="submit">Criar lista</button>
+      </Form>
     </div>
+    
   );
 }
+
