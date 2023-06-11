@@ -32,6 +32,20 @@ function writeItem(listIndex, itemName){
   fs.writeFileSync('database.json', JSON.stringify(database));
 }
 
+function deleteItem(listIndex, itemIndex) {
+  const database = readDatabase();
+  database.lists[listIndex].items.splice(itemIndex, 1);
+
+  fs.writeFileSync('database.json', JSON.stringify(database));
+}
+
+function deleteList(listIndex){
+  const database = readDatabase();
+  database.lists.splice(listIndex, 1);
+
+  fs.writeFileSync('database.json', JSON.stringify(database));
+}
+
 function setCheck(listIndex, itemIndex, checked) {
   const database = readDatabase();
   const trueChecked = checked == 'true' ? true : false;
@@ -39,11 +53,6 @@ function setCheck(listIndex, itemIndex, checked) {
   database.lists[listIndex].items[itemIndex].checked = trueChecked;
   fs.writeFileSync('database.json', JSON.stringify(database));
 }
-
-// function deleteItem(listIndex, itemIndex){
-//   const database = readDatabase();
-//   delete database.lists[listIndex].items[itemIndex]
-// }
 
 export async function loader() {
   return readDatabase();
@@ -74,6 +83,19 @@ export async function action({ request }) {
   if(itemName){
     const listIndex = form.get('listIndex');
     writeItem(listIndex,itemName);
+  }
+
+  const type = form.get('type');
+  if (type == 'deleteItem') {
+    const listIndex = form.get('listIndex');
+    const itemIndex = form.get('itemIndex');
+
+    deleteItem(listIndex, itemIndex);
+  }
+
+  if (type == 'deleteList') {
+    const listIndex = form.get('listIndex');
+    deleteList(listIndex);
   }
 
   return redirect('/?index');
@@ -126,6 +148,25 @@ export default function Index() {
     setInputItems(obj);
   }
 
+  function handleDeleteItemClick(e, listIndex, itemIndex){
+    const formData = new FormData();
+  
+    formData.append('type', 'deleteItem');
+    formData.append('listIndex', listIndex);
+    formData.append('itemIndex', itemIndex);
+  
+    submit(formData, { method: 'post', action: '/?index', replace: true });
+  }
+
+  function handleDeleteListClick(e, listIndex){
+    const formData = new FormData();
+  
+    formData.append('type', 'deleteList');
+    formData.append('listIndex', listIndex);
+  
+    submit(formData, { method: 'post', action: '/?index', replace: true });
+  }
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>To Do</h1>
@@ -134,12 +175,13 @@ export default function Index() {
           {database.lists.map((list, index) => (
             <div key={index}>
               <h2>{list.name}</h2>
+              <button id="delete" onClick={(e) => handleDeleteListClick(e, index)}>x</button>
               <ul>
                 {list.items.map((item, itemIndex) => (
                   <li key={itemIndex}>
                     <input name='check' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
                     <label>{item.nameItem}</label>
-                    {/* <button id="delete" type="submit" onClick={deleteItem(index, itemIndex)}>x</button> */}
+                    <button id="delete" onClick={(e) => handleDeleteItemClick(e, index, itemIndex)}>x</button>
                   </li>
                 ))}
               </ul>
