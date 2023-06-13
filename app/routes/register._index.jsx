@@ -57,14 +57,14 @@ export default function Posts() {
         <div>
           <h1 className='text-5xl font-bold translatemt-5 ml-[38%] my-10'>Faça o seu cadastro</h1>
         </div>
-        <div className='flex flex-col bg-[#8B8BAE] w-1/3 h-96 rounded align-center mx-[35%]'>
+        <div className='flex flex-col bg-[#8B8BAE] w-1/3 h-96 rounded-xl align-center mx-[35%]'>
           <label className='text-2xl flex flex-col ml-[15%] mt-[10%]'>
             Usuário: <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] py-1 px-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="text" name="username" required />
           </label>
           <label className='text-2xl flex flex-col ml-[15%] mt-[5%]'>
             Senha: <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] p-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="password" name="password" required />
           </label>
-          <button className='text-base bg-[#626282] hover:bg-[#272f49] rounded w-32 h-10 px-5 py-2 flex flex-col ml-[35%] mt-[5%]' type="submit">Cadastrar</button>
+          <button className='text-base bg-[#626282] hover:bg-[#272f49] rounded w-[20%] h-10 px-6 py-2 ml-[38%] mt-[10%]' type="submit">Cadastrar</button>
         </div>
       </Form>
     </div>

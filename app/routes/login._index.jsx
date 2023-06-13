@@ -83,7 +83,7 @@ return (
             <div>
                 <h1 className='text-5xl font-bold translatemt-5 ml-[38%] my-10'>Faça o seu login</h1>
             </div>
-            <div className='flex flex-col bg-[#8B8BAE] w-1/3 h-96 rounded align-center mx-[35%]'>
+            <div className='flex flex-col bg-[#8B8BAE] w-1/3 h-96 rounded-xl align-center mx-[35%]'>
                 <label className='text-2xl flex flex-col ml-[15%] mt-[10%]'>
                     Usuário: <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] py-1 px-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="text" name="username" required />
                 </label>
