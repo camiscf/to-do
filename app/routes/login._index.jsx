@@ -77,24 +77,25 @@ export default function Login() {
 const { error } = useLoaderData();
 
 return (
-    <div>
+    <div className='font-roboto m-0 tx-[#101935]'>
         {error ? <div className="error">{error}</div> : null}
-        <Form method="POST" >
+        <Form method="POST"  className='flex flex-col justify-center'>
             <div>
-            <p>Please sign in</p>
+                <h1 className='text-5xl font-bold translatemt-5 ml-[38%] my-10'>Faça o seu login</h1>
             </div>
-            <label>
-            Username: <input type="text" name="username" required />
-            </label>
-            <label>
-            Password:{" "}
-            <input type="password" name="password" required />
-            </label>
-            <button type="submit">Fazer Login</button>
+            <div className='flex flex-col bg-[#8B8BAE] w-1/3 h-96 rounded align-center mx-[35%]'>
+                <label className='text-2xl flex flex-col ml-[15%] mt-[10%]'>
+                    Usuário: <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] py-1 px-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="text" name="username" required />
+                </label>
+                <label className='text-2xl flex flex-col ml-[15%] mt-[5%]'>
+                    Senha:{" "} <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] py-1 px-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="password" name="password" required />
+                </label>
+                <button className='text-base bg-[#626282] hover:bg-[#272f49] rounded w-32 h-10 px-5 py-2 flex flex-col ml-[35%] mt-[5%]' type="submit">Fazer Login</button>
+                <div>
+                    <Link to='/register' className='text-base bg-[#626282] hover:bg-[#272f49] rounded w-32 h-10 px-5 py-2 flex flex-col ml-[35%] mt-[5%]' >Cadastre-se</Link>
+                </div>  
+            </div>
         </Form>
-        <div>
-            <Link to='/register'>Cadastre-se</Link>
-        </div>
     </div>
 );
 }
