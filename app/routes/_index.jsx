@@ -39,6 +39,10 @@ export async function loader({ request }) {
 
   userId = session.get("userId");
 
+  if (!userId) {
+    return redirect('/login');
+  }
+
   return await getUser();
 }
 
@@ -100,6 +104,16 @@ export async function action({ request }) {
     const newListName = form.get('newListName');
 
     await editList(listIndex, newListName);
+  }
+
+  if (type == 'logout') {
+    session.unset('userId');
+
+    return redirect('/login?index', {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    })
   }
 
   async function writeDatabase(list) {
@@ -328,6 +342,14 @@ export default function Index() {
     submit(formData, { method: 'post', action: '/?index', replace: true });
   }
 
+  function handleLogoutClick(e) {
+    const formData = new FormData();
+
+    formData.append('type', 'logout');
+
+    submit(formData, { method: 'post', action: '/?index', replace: true });
+  }
+
   return (
     <div className="font-roboto m-0 tx-[#101935] h-full">
       <h1 className='text-5xl font-bold translate ml-10 mt-5'>to do list</h1>
@@ -337,7 +359,7 @@ export default function Index() {
             <div className='bg-[#8B8BAE] w-auto h-full rounded-xl first:ml-10 mr-8 mt-10 mb-10 py-4 px-7 ' key={index}>
               {/* nome da lista */}
               <div className='flex w-auto'>
-                {inputEdit[index] && <input  autocomplete="off" className='rounded bg-transparent  w-auto py-1 px-1 text-2xl font-bold focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] ' value={inputEdit[index].name} onChange={(e) => handleEditList(e, index)} onFocus={(e) => handleListFocus(e, index)} onBlur={(e) => handleEditListConfirm(e, index)} />}
+                {inputEdit[index] && <input  autoComplete="off" className='rounded bg-transparent  w-auto py-1 px-1 text-2xl font-bold focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] ' value={inputEdit[index].name} onChange={(e) => handleEditList(e, index)} onFocus={(e) => handleListFocus(e, index)} onBlur={(e) => handleEditListConfirm(e, index)} />}
                 <button className='' id="delete" onClick={(e) => handleDeleteListClick(e, index)}>❌</button>
               </div>
               <ul>
@@ -350,14 +372,14 @@ export default function Index() {
                 ))}
               </ul>
               <div> 
-                  <input id="newItem" autocomplete="off" className=' opacity-75 rounded w-10/12 py-2 px-2 bg-transparent text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5' type="text" onChange={(e) => handleInputItemChange(e, index)} value={inputItems[index]} name='itemName' placeholder='Adicione uma tarefa'/>
+                  <input id="newItem" autoComplete="off" className=' opacity-75 rounded w-10/12 py-2 px-2 bg-transparent text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5' type="text" onChange={(e) => handleInputItemChange(e, index)} value={inputItems[index]} name='itemName' placeholder='Adicione uma tarefa'/>
                   <button className='ml-2 opacity-75' id="submit" onClick={(e) => handleChangeItem(e, index)}>➕</button>
               </div>
             </div>
           ))}
           <Form className='bg-[#8B8BAE] opacity-75 h-32 w-62 rounded-xl ml-10 mr-8 mt-10' method='post' name='createList'>
               <div className='flex flex-row'>
-              <input autocomplete="off" id="newList" type="text" className='rounded w-48 ml-5 mt-4 p-1 bg-[#8B8BAE] text-2xl outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder:text-2xl placeholder:bold placeholder-black mr-5'
+              <input autoComplete="off" id="newList" type="text" className='rounded w-48 ml-5 mt-4 p-1 bg-[#8B8BAE] text-2xl outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder:text-2xl placeholder:bold placeholder-black mr-5'
               onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
               <button id="submit" className='mt-4 mr-8 opacity-75' type="submit">➕</button>
               </div>
@@ -368,13 +390,14 @@ export default function Index() {
         <div>          
           <Form className='bg-[#8B8BAE] opacity-75 h-32 w-72 rounded-xl ml-10 mr-8 mt-10' method='post' name='createList'>
               <div className='flex flex-row'>
-              <input autocomplete="off" id="newList" type="text" className='rounded w-48 ml-5 mt-4 p-1 bg-[#8B8BAE] text-2xl outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder:text-2xl placeholder:bold placeholder-black mr-5'
+              <input autoComplete="off" id="newList" type="text" className='rounded w-48 ml-5 mt-4 p-1 bg-[#8B8BAE] text-2xl outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder:text-2xl placeholder:bold placeholder-black mr-5'
               onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
               <button id="submit" className='mt-4 mr-8 opacity-75' type="submit">➕</button>
               </div>
           </Form>
         </div> 
       )}
+        <button onClick={(e) => handleLogoutClick(e)}>Logout</button>
       </div>
   );
 }
