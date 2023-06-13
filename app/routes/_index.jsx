@@ -352,7 +352,10 @@ export default function Index() {
 
   return (
     <div className="font-roboto m-0 tx-[#101935] h-full">
-      <h1 className='text-5xl font-bold translate ml-10 mt-5'>to do list</h1>
+      <div className='flex flex-row place-content-around'>
+        <h1 className='text-5xl font-bold translate-x-[-128%] mt-5'>to do list</h1>
+        <button className='text-base bg-[#8B8BAE] hover:bg-[#7B7BA3] h-10 translate-y-[60%] rounded-xl px-6 py-2' onClick={(e) => handleLogoutClick(e)}>Logout</button>
+      </div>
       {database.lists.length > 0 ? (
         <div className='flex flex-row'>
           {database.lists.map((list, index) => (
@@ -397,7 +400,6 @@ export default function Index() {
           </Form>
         </div> 
       )}
-        <button onClick={(e) => handleLogoutClick(e)}>Logout</button>
       </div>
   );
 }
