@@ -1,7 +1,13 @@
 import { redirect } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
+import { getSession, commitSession } from "../sessions";
 import * as fs from 'fs';
 import * as React from "react";
+
+let session;
+let userId;
+
+const FILE = 'database.json';
 
 export const meta = () => {
   return [
@@ -11,61 +17,38 @@ export const meta = () => {
   ];
 };
 
-function readDatabase() {
-  const data = fs.readFileSync('database.json');
-  return JSON.parse(data);
+  
+async function readDatabase() {
+  const data = fs.readFileSync(FILE);
+
+  const parsedData = JSON.parse(data);
+
+  return parsedData;
 }
 
-function writeDatabase(list) {
-  const database = readDatabase();
-  database.lists.push(list);
-  fs.writeFileSync('database.json', JSON.stringify(database));
+async function getUser() {
+  const database = await readDatabase();
+
+  return database[userId];
 }
 
-function writeItem(listIndex, itemName){
-  const database = readDatabase();
-  const item = {
-    "nameItem" : itemName,
-    "checked": false,
-  }
-  database.lists[Number(listIndex)].items.push(item);
-  fs.writeFileSync('database.json', JSON.stringify(database));
-}
+export async function loader({ request }) {
+  session = await getSession(
+    request.headers.get("Cookie")
+  );
 
-function deleteItem(listIndex, itemIndex) {
-  const database = readDatabase();
-  database.lists[listIndex].items.splice(itemIndex, 1);
+  userId = session.get("userId");
 
-  fs.writeFileSync('database.json', JSON.stringify(database));
-
-}
-
-function deleteList(listIndex){
-  const database = readDatabase();
-  database.lists.splice(listIndex, 1);
-
-  fs.writeFileSync('database.json', JSON.stringify(database));
-}
-
-function editItem(listIndex, itemIndex, newItemName) {
-  const database = readDatabase();
-  database.lists[listIndex].items[itemIndex].nameItem = newItemName;
-  fs.writeFileSync('database.json', JSON.stringify(database));
-}
-
-function setCheck(listIndex, itemIndex, checked) {
-  const database = readDatabase();
-  const trueChecked = checked == 'true' ? true : false;
-
-  database.lists[listIndex].items[itemIndex].checked = trueChecked;
-  fs.writeFileSync('database.json', JSON.stringify(database));
-}
-
-export async function loader() {
-  return readDatabase();
+  return await getUser();
 }
 
 export async function action({ request }) {
+  session = await getSession(
+    request.headers.get("Cookie")
+  );
+
+  userId = session.get("userId");
+
   const form = await request.formData();
 
   const checked = form.get('checked');
@@ -73,7 +56,7 @@ export async function action({ request }) {
     const listIndex = form.get('listIndex');
     const itemIndex = form.get('itemIndex');
 
-    setCheck(listIndex, itemIndex, checked);
+    await setCheck(listIndex, itemIndex, checked);
   }
 
   const listName = form.get('listName');
@@ -83,28 +66,25 @@ export async function action({ request }) {
       "items": [
       ],
     }
-    writeDatabase(list);
+    await writeDatabase(list);
   }
 
   const itemName = form.get('itemName');
   if(itemName){
     const listIndex = form.get('listIndex');
-    writeItem(listIndex,itemName);
+    await writeItem(listIndex,itemName);
   }
 
   const type = form.get('type');
   if (type == 'deleteItem') {
     const listIndex = form.get('listIndex');
     const itemIndex = form.get('itemIndex');
-
-    deleteItem(listIndex, itemIndex);
-
-
+    await deleteItem(listIndex, itemIndex);
   }
 
   if (type == 'deleteList') {
     const listIndex = form.get('listIndex');
-    deleteList(listIndex);
+    await deleteList(listIndex);
   }
 
   if (type == 'editItem') {
@@ -112,7 +92,89 @@ export async function action({ request }) {
     const itemIndex = form.get('itemIndex');
     const newItemName = form.get('newItemName');
 
-    editItem(listIndex, itemIndex, newItemName);
+    await editItem(listIndex, itemIndex, newItemName);
+  }
+
+  if (type == 'editList') {
+    const listIndex = form.get('listIndex');
+    const newListName = form.get('newListName');
+
+    await editList(listIndex, newListName);
+  }
+
+  async function writeDatabase(list) {
+    const database = await readDatabase();
+    const user = await getUser();
+
+    user.lists.push(list);
+    database[userId] = user;
+
+    fs.writeFileSync(FILE, JSON.stringify(database));
+  }
+  
+  async function writeItem(listIndex, itemName){
+    const database = await readDatabase();
+    const user = await getUser();
+
+    const item = {
+      "nameItem" : itemName,
+      "checked": false,
+    }
+    user.lists[Number(listIndex)].items.push(item);
+    database[userId] = user;
+
+    fs.writeFileSync(FILE, JSON.stringify(database));
+  }
+  
+  async function deleteItem(listIndex, itemIndex) {
+    const database = await readDatabase();
+    const user = await getUser();
+
+    user.lists[listIndex].items.splice(itemIndex, 1);
+    database[userId] = user;
+
+    fs.writeFileSync(FILE, JSON.stringify(database));
+  
+  }
+  
+  async function deleteList(listIndex){
+    const database = await readDatabase();
+    const user = await getUser();
+
+    user.lists.splice(listIndex, 1);
+    database[userId] = user;
+
+    fs.writeFileSync(FILE, JSON.stringify(database));
+  }
+  
+  async function editItem(listIndex, itemIndex, newItemName) {
+    const database = await readDatabase();
+    const user = await getUser();
+    user.lists[listIndex].items[itemIndex].nameItem = newItemName;
+    database[userId] = user;
+
+    fs.writeFileSync(FILE, JSON.stringify(database));
+  }
+  
+  async function editList(listIndex, newListName) {
+    const database = await readDatabase();
+    const user = await getUser();
+
+    user.lists[listIndex].name = newListName;
+    database[userId] = user;
+    fs.writeFileSync(FILE, JSON.stringify(database));
+  }
+  async function setCheck(listIndex, itemIndex, checked) {
+    const database = await readDatabase();
+    const user = await getUser();
+
+    const trueChecked = checked == 'true' ? true : false;
+  
+    user.lists[listIndex].items[itemIndex].checked = trueChecked;
+
+    database[userId] = user;
+
+    fs.writeFileSync(FILE, JSON.stringify(database));
   }
 
   return redirect('/?index');
@@ -127,10 +189,6 @@ export default function Index() {
 
 
   const inputs = {};
-
-  database.lists.forEach((list, index) => {
-    inputs[index] = "";
-  });
 
   const [inputItems, setInputItems] = React.useState(inputs);
   
@@ -164,7 +222,8 @@ export default function Index() {
     });
   
     setInputEdit(edits);
-  }, [database]);
+  }, [database.lists]);
+
 
 
   const handleChangeList = (e) => {
@@ -207,16 +266,39 @@ export default function Index() {
 
     submit(formData, { method: 'post', action: '/?index', replace: true });
   }
+  const handleEditListConfirm = (e, listIndex) => {
+    const obj = {...inputEdit};
+    obj[listIndex].editing = false;
+    setInputEdit(obj);
 
+    const formData = new FormData();
+
+    formData.append('type', 'editList');
+    formData.append('listIndex', listIndex);
+    formData.append('newListName', inputEdit[listIndex].name);
+
+    submit(formData, { method: 'post', action: '/?index', replace: true });
+  }
   const handleEditItem = (e, listIndex, itemIndex) => {
     const obj = { ...inputEdit };
     obj[listIndex].items[itemIndex].name = e.target.value;
     setInputEdit(obj);
   }
 
+  const handleEditList = (e, listIndex) => {
+    const obj = { ...inputEdit };
+    obj[listIndex].name = e.target.value;
+    setInputEdit(obj);
+  }
+
   const handleItemFocus = (e, listIndex, itemIndex) => {
     const obj = { ...inputEdit };
     obj[listIndex].items[itemIndex].editing = true;
+    setInputEdit(obj);
+  }
+  const handleListFocus = (e, listIndex) => {
+    const obj = { ...inputEdit };
+    obj[listIndex].editing = true;
     setInputEdit(obj);
   }
 
@@ -247,39 +329,41 @@ export default function Index() {
   }
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>To Do</h1>
+    <div className="font-roboto m-0 tx-[#101935] h-full">
+      <h1 className='text-5xl font-bold translate ml-10 mt-5'>to do list</h1>
       {database.lists.length > 0 ? (
-        <div>
+        <div className='flex flex-row'>
           {database.lists.map((list, index) => (
-            <div key={index}>
-              <h2>{list.name}</h2>
-              <button id="delete" onClick={(e) => handleDeleteListClick(e, index)}>x</button>
+            <div className='bg-[#8B8BAE] w-auto h-full rounded-xl first:ml-10 mr-8 mt-10 mb-10 py-4 px-7 ' key={index}>
+              {/* nome da lista */}
+              <div className='flex w-auto'>
+                {inputEdit[index] && <input  className='rounded bg-transparent  w-fit py-1 px-1 text-2xl font-bold focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] ' value={inputEdit[index].name} onChange={(e) => handleEditList(e, index)} onFocus={(e) => handleListFocus(e, index)} onBlur={(e) => handleEditListConfirm(e, index)} />}
+                <button className='mr-4' id="delete" onClick={(e) => handleDeleteListClick(e, index)}>❌</button>
+              </div>
               <ul>
                 {list.items.map((item, itemIndex) => (
-                  <li key={itemIndex}>
-                    <input name='check' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
-                    <input value={inputEdit[index].items[itemIndex].name} onChange={(e) => handleEditItem(e, index, itemIndex)} onFocus={(e) => handleItemFocus(e, index, itemIndex)} onBlur={(e) => handleEditItemConfirm(e, index, itemIndex)} />
+                  <li className='' key={itemIndex}>
+                    <input name='check'  className='w-5 h-5 outline-none translate-y-1 border-none rounded-lg focus:ring-0' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
+                    {inputEdit[index] && inputEdit[index].items[itemIndex] && <input className='rounded ml-3 mt-2 mb-2 mr-5 w-9/12 py-2 px-1 bg-transparent text-lg outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3]' value={inputEdit[index].items[itemIndex].name} onChange={(e) => handleEditItem(e, index, itemIndex)} onFocus={(e) => handleItemFocus(e, index, itemIndex)} onBlur={(e) => handleEditItemConfirm(e, index, itemIndex)} /> }
                     <button id="delete" onClick={(e) => handleDeleteItemClick(e, index, itemIndex)}>❌</button>
-                    {inputEdit[index].items[itemIndex].editing && <button onClick={(e) => handleEditItemConfirm(e, index, itemIndex)}>✅</button>}
                   </li>
                 ))}
               </ul>
               <div> 
-                  <input id="newItem" type="text" onChange={(e) => handleInputItemChange(e, index)} value={inputItems[index]} name='itemName' placeholder='Adicione uma tarefa'/>
-                  <button id="submit" onClick={(e) => handleChangeItem(e, index)}>adicionar tarefa</button>
+                  <input id="newItem" className='rounded w-10/12 py-2 px-2 bg-transparent text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5' type="text" onChange={(e) => handleInputItemChange(e, index)} value={inputItems[index]} name='itemName' placeholder='Adicione uma tarefa'/>
+                  <button id="submit" onClick={(e) => handleChangeItem(e, index)}>➕</button>
               </div>
             </div>
           ))}
         </div>
-    ) : (
+      ) : (
       <p>Cria a sua primeira lista!</p>
-    )}
-      <Form method='post' name='createList'>
-        <input id="newList" type="text" onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
-        <button id="submit" type="submit">Criar lista</button>
-      </Form>
-    </div>
-    
+      )}
+        <Form method='post' name='createList'>
+          <input id="newList" type="text"  className='rounded ml-10 w-10/12 py-2 px-2 bg-red-600 text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5'
+          onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
+          <button id="submit" type="submit">➕</button>
+        </Form>
+      </div>
   );
 }
