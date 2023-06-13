@@ -18,7 +18,7 @@ export const meta = () => {
 };
 
   
-async function readDatabase() {
+export async function readDatabase() {
   const data = fs.readFileSync(FILE);
 
   const parsedData = JSON.parse(data);
@@ -26,7 +26,7 @@ async function readDatabase() {
   return parsedData;
 }
 
-async function getUser() {
+export async function getUser() {
   const database = await readDatabase();
 
   return database[userId];

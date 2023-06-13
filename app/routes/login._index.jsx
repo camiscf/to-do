@@ -1,4 +1,4 @@
-import { Form, useLoaderData } from '@remix-run/react';
+import { Form, Link, useLoaderData } from '@remix-run/react';
 import { json, redirect } from "@remix-run/node"; // or cloudflare/deno
 import * as fs from 'fs';
 import { getSession, commitSession } from "../sessions";
@@ -74,24 +74,27 @@ export async function action({ request }) {
 }
 
 export default function Login() {
-const { currentUser, error } = useLoaderData();
+const { error } = useLoaderData();
 
 return (
     <div>
-    {error ? <div className="error">{error}</div> : null}
-    <Form method="POST" >
+        {error ? <div className="error">{error}</div> : null}
+        <Form method="POST" >
+            <div>
+            <p>Please sign in</p>
+            </div>
+            <label>
+            Username: <input type="text" name="username" required />
+            </label>
+            <label>
+            Password:{" "}
+            <input type="password" name="password" required />
+            </label>
+            <button type="submit">Fazer Login</button>
+        </Form>
         <div>
-        <p>Please sign in</p>
+            <Link to='/register'>Cadastre-se</Link>
         </div>
-        <label>
-        Username: <input type="text" name="username" required />
-        </label>
-        <label>
-        Password:{" "}
-        <input type="password" name="password" required />
-        </label>
-        <button type="submit">Fazer Login</button>
-    </Form>
     </div>
 );
 }
