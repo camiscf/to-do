@@ -365,7 +365,15 @@ export default function Index() {
 
         </div>
       ) : (
-      <p>Cria a sua primeira lista!</p>
+        <div>          
+          <Form className='bg-[#8B8BAE] opacity-75 h-32 w-72 rounded-xl ml-10 mr-8 mt-10' method='post' name='createList'>
+              <div className='flex flex-row'>
+              <input autocomplete="off" id="newList" type="text" className='rounded w-48 ml-5 mt-4 p-1 bg-[#8B8BAE] text-2xl outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder:text-2xl placeholder:bold placeholder-black mr-5'
+              onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
+              <button id="submit" className='mt-4 mr-8 opacity-75' type="submit">➕</button>
+              </div>
+          </Form>
+        </div> 
       )}
       </div>
   );
