@@ -337,33 +337,36 @@ export default function Index() {
             <div className='bg-[#8B8BAE] w-auto h-full rounded-xl first:ml-10 mr-8 mt-10 mb-10 py-4 px-7 ' key={index}>
               {/* nome da lista */}
               <div className='flex w-auto'>
-                {inputEdit[index] && <input  className='rounded bg-transparent  w-fit py-1 px-1 text-2xl font-bold focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] ' value={inputEdit[index].name} onChange={(e) => handleEditList(e, index)} onFocus={(e) => handleListFocus(e, index)} onBlur={(e) => handleEditListConfirm(e, index)} />}
-                <button className='mr-4' id="delete" onClick={(e) => handleDeleteListClick(e, index)}>❌</button>
+                {inputEdit[index] && <input  autocomplete="off" className='rounded bg-transparent  w-auto py-1 px-1 text-2xl font-bold focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] ' value={inputEdit[index].name} onChange={(e) => handleEditList(e, index)} onFocus={(e) => handleListFocus(e, index)} onBlur={(e) => handleEditListConfirm(e, index)} />}
+                <button className='' id="delete" onClick={(e) => handleDeleteListClick(e, index)}>❌</button>
               </div>
               <ul>
                 {list.items.map((item, itemIndex) => (
                   <li className='' key={itemIndex}>
-                    <input name='check'  className='w-5 h-5 outline-none translate-y-1 border-none rounded-lg focus:ring-0' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
+                    <input name='check'  className='w-5 h-5 outline-none translate-y-1 border-none rounded-lg focus:ring-0 checked:line-through	' type ="checkbox" onChange={(e) => handleItemCheck(e, index, itemIndex)} checked={item.checked} />
                     {inputEdit[index] && inputEdit[index].items[itemIndex] && <input className='rounded ml-3 mt-2 mb-2 mr-5 w-9/12 py-2 px-1 bg-transparent text-lg outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3]' value={inputEdit[index].items[itemIndex].name} onChange={(e) => handleEditItem(e, index, itemIndex)} onFocus={(e) => handleItemFocus(e, index, itemIndex)} onBlur={(e) => handleEditItemConfirm(e, index, itemIndex)} /> }
                     <button id="delete" onClick={(e) => handleDeleteItemClick(e, index, itemIndex)}>❌</button>
                   </li>
                 ))}
               </ul>
               <div> 
-                  <input id="newItem" className='rounded w-10/12 py-2 px-2 bg-transparent text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5' type="text" onChange={(e) => handleInputItemChange(e, index)} value={inputItems[index]} name='itemName' placeholder='Adicione uma tarefa'/>
-                  <button id="submit" onClick={(e) => handleChangeItem(e, index)}>➕</button>
+                  <input id="newItem" autocomplete="off" className=' opacity-75 rounded w-10/12 py-2 px-2 bg-transparent text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5' type="text" onChange={(e) => handleInputItemChange(e, index)} value={inputItems[index]} name='itemName' placeholder='Adicione uma tarefa'/>
+                  <button className='ml-2 opacity-75' id="submit" onClick={(e) => handleChangeItem(e, index)}>➕</button>
               </div>
             </div>
           ))}
+          <Form className='bg-[#8B8BAE] opacity-75 h-32 w-62 rounded-xl ml-10 mr-8 mt-10' method='post' name='createList'>
+              <div className='flex flex-row'>
+              <input autocomplete="off" id="newList" type="text" className='rounded w-48 ml-5 mt-4 p-1 bg-[#8B8BAE] text-2xl outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder:text-2xl placeholder:bold placeholder-black mr-5'
+              onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
+              <button id="submit" className='mt-4 mr-8 opacity-75' type="submit">➕</button>
+              </div>
+            </Form>
+
         </div>
       ) : (
       <p>Cria a sua primeira lista!</p>
       )}
-        <Form method='post' name='createList'>
-          <input id="newList" type="text"  className='rounded ml-10 w-10/12 py-2 px-2 bg-red-600 text-base outline-none focus:outline-none hover:cursor-pointer hover:bg-[#7B7BA3] placeholder-black mr-5'
-          onChange={handleChangeList} value={inputList} name='listName' placeholder='Nome da Lista'/>
-          <button id="submit" type="submit">➕</button>
-        </Form>
       </div>
   );
 }
