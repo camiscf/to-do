@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import * as fs from "fs";
-import { readDatabase, getUser } from "./_index";
+import { readDatabase } from "./_index";
 import { redirect } from '@remix-run/node';
 import { getSession, commitSession } from "../sessions";
 
@@ -16,7 +16,6 @@ export async function action({ request }) {
 
   async function writeDatabase(username, password) {
     const database = await readDatabase();
-    const user = await getUser();
 
     const id = uuidv4();
 
@@ -55,16 +54,16 @@ export default function Posts() {
     <div className='font-roboto m-0 tx-[#101935]'>
       <Form method="POST" className='flex flex-col justify-center'>
         <div>
-          <h1 className='text-5xl font-bold translatemt-5 ml-[38%] my-10'>Faça o seu cadastro</h1>
+          <h1 Style=" margin-left: 600px;  margin-right: 500px;" className='text-5xl font-bold mt-10 my-10'>Cadastro</h1>
         </div>
         <div className='flex flex-col bg-[#8B8BAE] w-1/3 h-96 rounded-xl align-center mx-[35%]'>
           <label className='text-2xl flex flex-col ml-[15%] mt-[10%]'>
-            Usuário: <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] py-1 px-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="text" name="username" required />
+            Usuário: <input autoComplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] py-1 px-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="text" name="username" required />
           </label>
           <label className='text-2xl flex flex-col ml-[15%] mt-[5%]'>
-            Senha: <input autocomplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] p-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="password" name="password" required />
+            Senha: <input autoComplete="off" className='rounded bg-[#7B7BA3] mt-2 w-[80%] p-1 text-base font-bold focus:outline-none hover:cursor-pointer ' type="password" name="password" required />
           </label>
-          <button className='text-base bg-[#626282] hover:bg-[#272f49] rounded w-[20%] h-10 px-6 py-2 ml-[38%] mt-[10%]' type="submit">Cadastrar</button>
+          <button Style="margin-left: 175px; width: 100px;" className='text-base bg-[#626282] hover:bg-[#272f49] rounded px-6 py-2 ml-[60%] mt-[10%]' type="submit">Cadastrar</button>
         </div>
       </Form>
     </div>

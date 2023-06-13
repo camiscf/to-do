@@ -4,18 +4,18 @@ import * as fs from 'fs';
 import { getSession, commitSession } from "../sessions";
   
 export async function loader({ request }) {
-const session = await getSession(
-    request.headers.get("Cookie")
-);
+    const session = await getSession(
+        request.headers.get("Cookie")
+    );
 
-const data = { error: session.get("error") };
+    const data = { error: session.get("error") };
 
-return json(data, {
-    // salvar na sessão
-    headers: {
-    "Set-Cookie": await commitSession(session),
-    },
-});
+    return json(data, {
+        // salvar na sessão
+        headers: {
+        "Set-Cookie": await commitSession(session),
+        },
+    });
 }
 
 export async function action({ request }) {
